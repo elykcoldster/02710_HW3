@@ -18,7 +18,6 @@ def get_emitted_data(filepath='Q1/chromosome1.tsv'):
 	        X.append(np.array([_ for _ in map(float, row)]))
 	return np.array(X)
 
-
 def get_ground_truth(filepath='Q1/chromosome1_lads.tsv'):
 	""" Returns a numpy array, where each entry is [start_site, end_site] """
 	Z = []
@@ -36,13 +35,19 @@ def count_correct(predicted_states, ground_truth):
 
 GHMM = hmm.GaussianHMM(n_components=2)
 emissions = get_emitted_data()
+signals = emissions[:,1][np.newaxis].transpose()
 
-GHMM.fit(emissions)
+GHMM.fit(signals)
 
-states = GHMM.predict(emissions)
+states = GHMM.predict(signals)
 
 state_data = (emissions[np.where(states==0)], emissions[np.where(states==1)])
+colors = ((0.35, 0.15, 1.0), (1.0, 0.15, 0.35))
 
-for state in state_data:
-	plt.plot(state[:,0], state[:,1])
+plt.title('2 State HMM Predicted States and DamID Values')
+plt.xlabel('Chromosome Position')
+plt.ylabel('DamID Value')
+for i, state in enumerate(state_data):
+	plt.plot(state[:,0], state[:,1], '.', linewidth=1, color=colors[i], label='State ' + str(i))
+plt.legend()
 plt.show()
