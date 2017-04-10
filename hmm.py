@@ -30,11 +30,25 @@ def get_ground_truth(filepath='Q1/chromosome1_lads.tsv'):
 def count_correct(predicted_states, ground_truth):
 	""" Predicted states is a numpy array, where each entry is [chromosome position, predicted state]
 		ground_truth is a numpy array, where each entry is [start_site, end_site] """
+	corr_states = [0, 1]
+	num_corr = [0, 0]
+    
+	locations = predicted_states[:,0]
 
-	return 0.0
+	for i, corr_state in enumerate(corr_states):
+		for n in range(0, len(ground_truth)):
+			lower = np.where(locations >= ground_truth[n,0])
+			upper = np.where(locations <= ground_truth[n,1])
+			lad_locs = np.intersect1d(upper, lower)
+			
+			for lad_loc in lad_locs:
+				if predicted_states[lad_loc, 1] == corr_state:
+					num_corr[i] += 1
+	return max(num_corr)
 
 GHMM = hmm.GaussianHMM(n_components=2)
 emissions = get_emitted_data()
+ground_truth = get_ground_truth()
 signals = emissions[:,1][np.newaxis].transpose()
 
 GHMM.fit(signals)
@@ -42,6 +56,12 @@ GHMM.fit(signals)
 states = GHMM.predict(signals)
 
 state_data = (emissions[np.where(states==0)], emissions[np.where(states==1)])
+
+num_correct = count_correct(np.stack([emissions[:,0], states]).transpose(), ground_truth)
+
+print("Maximum score:")
+print(num_correct)
+# Plot States 0 and 1
 colors = ((0.35, 0.15, 1.0), (1.0, 0.15, 0.35))
 
 plt.title('2 State HMM Predicted States and DamID Values')
