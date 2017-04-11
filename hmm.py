@@ -57,10 +57,26 @@ states = GHMM.predict(signals)
 
 state_data = (emissions[np.where(states==0)], emissions[np.where(states==1)])
 
+# Get maximum score
 num_correct = count_correct(np.stack([emissions[:,0], states]).transpose(), ground_truth)
 
 print("Maximum score:")
 print(num_correct)
+
+# Get BIC
+BIC_array = []
+for k in range(2,16):
+	GHMM = hmm.GaussianHMM(n_components=k)
+	GHMM.fit(signals)
+	
+	l = GHMM.score(signals)
+	p = k*(k+1)
+
+	BIC = -2*l + p*np.log(len(signals))
+	BIC_array.append(BIC)
+	print('k = {0}: {1}'.format(k, BIC))
+print('Optimal BIC: {0}: {1}'.format(np.argmin(BIC_array) + 2, min(BIC_array)))
+
 # Plot States 0 and 1
 colors = ((0.35, 0.15, 1.0), (1.0, 0.15, 0.35))
 
