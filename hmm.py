@@ -46,7 +46,7 @@ def count_correct(predicted_states, ground_truth):
 					num_corr[i] += 1
 	return max(num_corr)
 
-GHMM = hmm.GaussianHMM(n_components=2)
+GHMM = hmm.GaussianHMM(n_components=2, n_iter=10)
 emissions = get_emitted_data()
 ground_truth = get_ground_truth()
 signals = emissions[:,1][np.newaxis].transpose()
@@ -66,7 +66,7 @@ print(num_correct)
 # Get BIC
 BIC_array = []
 for k in range(2,16):
-	GHMM = hmm.GaussianHMM(n_components=k)
+	GHMM = hmm.GaussianHMM(n_components=k, n_iter=100)
 	GHMM.fit(signals)
 	
 	l = GHMM.score(signals)
