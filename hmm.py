@@ -70,12 +70,18 @@ for k in range(2,16):
 	GHMM.fit(signals)
 	
 	l = GHMM.score(signals)
-	p = k*(k+1)
+	p = k*(k + 2) - 1
 
 	BIC = -2*l + p*np.log(len(signals))
 	BIC_array.append(BIC)
 	print('k = {0}: {1}'.format(k, BIC))
 print('Optimal BIC: {0}: {1}'.format(np.argmin(BIC_array) + 2, min(BIC_array)))
+
+plt.title('BIC Values vs. k')
+plt.xlabel('k')
+plt.ylabel('BIC')
+plt.plot(range(2,16), BIC_array)
+plt.show()
 
 # Plot States 0 and 1
 colors = ((0.35, 0.15, 1.0), (1.0, 0.15, 0.35))
