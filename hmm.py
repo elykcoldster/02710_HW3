@@ -35,18 +35,28 @@ def count_correct(predicted_states, ground_truth):
     
 	locations = predicted_states[:,0]
 
+	all_lad_locs = np.array([])
+	for n in range(0, len(ground_truth)):
+		lower = np.where(locations >= ground_truth[n,0])
+		upper = np.where(locations <= ground_truth[n,1])
+		lad_locs = np.intersect1d(upper, lower)
+		all_lad_locs = np.append(all_lad_locs, lad_locs)
+
+	all_lad_locs = np.unique(all_lad_locs)
+
 	for i, corr_state in enumerate(corr_states):
-		for n in range(0, len(ground_truth)):
-			lower = np.where(locations >= ground_truth[n,0])
-			upper = np.where(locations <= ground_truth[n,1])
-			lad_locs = np.intersect1d(upper, lower)
-			
-			for lad_loc in lad_locs:
-				if predicted_states[lad_loc, 1] == corr_state:
-					num_corr[i] += 1
+		non_lad_locs = np.setdiff1d(range(0,len(locations)), all_lad_locs)
+
+		for lad_loc in all_lad_locs:
+			if predicted_states[int(lad_loc), 1] == corr_state:
+				num_corr[i] += 1
+		for non_lad_loc in non_lad_locs:
+			if predicted_states[non_lad_loc, 1] != corr_state:
+				num_corr[i] += 1
+
 	return max(num_corr)
 
-GHMM = hmm.GaussianHMM(n_components=2, n_iter=10)
+GHMM = hmm.GaussianHMM(n_components=2, n_iter=100)
 emissions = get_emitted_data()
 ground_truth = get_ground_truth()
 signals = emissions[:,1][np.newaxis].transpose()
@@ -61,7 +71,7 @@ state_data = (emissions[np.where(states==0)], emissions[np.where(states==1)])
 num_correct = count_correct(np.stack([emissions[:,0], states]).transpose(), ground_truth)
 
 print("Maximum score:")
-print(num_correct)
+print(num_correct/len(signals))
 
 # Get BIC
 BIC_array = []
